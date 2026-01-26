@@ -18,10 +18,13 @@
       --border:rgba(11,34,53,0.10);
       --shadow:0 18px 46px rgba(0,0,0,0.12);
       --radius:18px;
+
       --mapStroke:#ffffff;
       --mapStrokeW:6.2;
+
       --font: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
       --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
+
       --lvl1:#ff6b6b;
       --lvl2:#ffb24a;
       --lvl3:#37c28b;
@@ -41,13 +44,16 @@
         radial-gradient(900px 620px at 82% 18%, rgba(255,107,107,0.18), transparent 56%),
         radial-gradient(900px 650px at 60% 88%, rgba(55,194,139,0.16), transparent 58%),
         linear-gradient(180deg, var(--bgA), var(--bgB));
+      overflow-x:hidden;
     }
 
     .wrap{ max-width:1040px; margin:0 auto; }
 
+    /* ===== Header ===== */
     .hero{
       text-align:center;
       margin-bottom:12px;
+      padding:6px 0 2px;
     }
     .pill{
       display:inline-flex;
@@ -56,51 +62,74 @@
       border-radius:999px;
       border:1px solid rgba(11,34,53,0.12);
       background:rgba(255,255,255,0.62);
+      box-shadow:0 10px 24px rgba(0,0,0,0.06);
       font-weight:950;
       text-transform:uppercase;
       letter-spacing:0.06em;
       font-size:11px;
+      color:rgba(11,34,53,0.78);
       margin-bottom:10px;
     }
     .title{
       margin:0;
       font-weight:1000;
+      letter-spacing:-0.012em;
+      line-height:1.02;
       font-size:clamp(30px, 4.8vw, 58px);
+      color:rgba(11,34,53,0.94);
+      text-shadow:0 10px 26px rgba(0,0,0,0.06);
     }
     .title .hi{
+      display:inline-block;
       padding:0.06em 0.34em 0.10em;
       border-radius:14px;
       background:linear-gradient(90deg, rgba(255,107,107,0.25), rgba(255,178,74,0.22));
+      box-shadow:0 10px 22px rgba(255,107,107,0.10);
     }
 
+    /* ===== Card ===== */
     .card{
       background:var(--card);
       border:1px solid var(--border);
       border-radius:var(--radius);
       box-shadow:var(--shadow);
+      overflow:hidden;
       backdrop-filter: blur(10px);
     }
-
     .content{ padding:16px; }
 
+    /* ===== Map frame ===== */
     .map-frame{
       border-radius:16px;
       border:1px solid rgba(11,34,53,0.10);
       background:rgba(255,255,255,0.72);
-      padding:10px;
+      overflow:hidden;
+      padding:10px 10px 8px;
     }
 
-    svg{ width:100%; height:auto; }
+    svg{ width:100%; height:auto; display:block; }
 
     .state{
-      stroke:#fff;
-      stroke-width:6.2;
+      stroke:var(--mapStroke);
+      stroke-width:var(--mapStrokeW);
+      stroke-linejoin:round;
+      stroke-linecap:round;
       cursor:pointer;
+      transition:filter .12s ease, opacity .12s ease;
+    }
+    .state:hover{ filter: drop-shadow(0 0 10px rgba(0,0,0,0.12)); }
+
+    .state-outline{
+      fill:none;
+      stroke:rgba(11,34,53,0.08);
+      stroke-width:1;
+      pointer-events:none;
     }
 
+    /* ===== Tier key ===== */
     .tierbar{
       margin-top:8px;
-      padding:8px;
+      padding:8px 8px 6px;
       border-radius:14px;
       background:rgba(255,255,255,0.62);
       border:1px solid rgba(11,34,53,0.10);
@@ -108,32 +137,65 @@
     .tierbar .bar{
       height:10px;
       border-radius:999px;
+      border:1px solid rgba(11,34,53,0.14);
       background:linear-gradient(90deg,
-        var(--lvl1) 0%, var(--lvl1) 26%,
-        var(--lvl2) 26%, var(--lvl2) 50%,
-        var(--lvl3) 50%, var(--lvl3) 74%,
-        var(--lvl4) 74%, var(--lvl4) 100%);
+        var(--lvl1) 0%,
+        var(--lvl1) 26%,
+        var(--lvl2) 26%,
+        var(--lvl2) 50%,
+        var(--lvl3) 50%,
+        var(--lvl3) 74%,
+        var(--lvl4) 74%,
+        var(--lvl4) 100%
+      );
     }
-    .labels{
+
+    /* ✅ FIX: Legend columns match bar segment widths and stay 1-row always */
+    .tierbar .labels{
       display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:8px;
-      margin-top:8px;
+      grid-template-columns:26fr 24fr 24fr 26fr; /* matches 26/24/24/26% */
+      gap:8px 10px;
+      margin-top:7px;
       font-size:11px;
       font-weight:900;
+      color:rgba(11,34,53,0.72);
+      align-items:start;
     }
-    .item{
+
+    .tierbar .labels .item{
       display:flex;
-      gap:6px;
       align-items:flex-start;
-    }
-    .dot{ width:8px;height:8px;border-radius:50%; margin-top:3px; }
-    .legend-sub{ font-size:10px; opacity:.7; }
-
-    @media(max-width:780px){
-      .labels{ grid-template-columns:repeat(2,1fr); }
+      gap:7px;
+      justify-content:center; /* keeps each label centered under its segment */
+      text-align:left;
     }
 
+    .dot{
+      width:8px;height:8px;border-radius:50%;
+      flex:0 0 auto;
+      margin-top:3px;
+    }
+
+    .legend-sub{
+      font-size:10px;
+      font-weight:800;
+      color:rgba(11,34,53,0.55);
+      line-height:1.1;
+      margin-top:2px;
+    }
+
+    /* Small screens: keep alignment, just reduce text + allow wrapping inside the cell */
+    @media(max-width:680px){
+      .tierbar .labels{ font-size:10px; gap:6px 8px; }
+      .legend-sub{ font-size:9px; }
+      .tierbar .labels .item{ justify-content:flex-start; }
+    }
+    @media(max-width:520px){
+      .tierbar .labels{ font-size:9px; }
+      .legend-sub{ font-size:8px; }
+    }
+
+    /* ===== Footer ===== */
     .footer{
       margin-top:12px;
       padding:12px 16px;
@@ -143,26 +205,33 @@
       align-items:flex-end;
       justify-content:space-between;
       gap:16px;
+      flex-wrap:nowrap;
     }
-
-    .foot-left{
-      max-width:70%;
-    }
+    .foot-left{ max-width:72%; }
     .source{
       font-size:11px;
       font-weight:1000;
       text-transform:uppercase;
+      color:rgba(11,34,53,0.78);
       margin-bottom:4px;
     }
     .method{
       font-size:11px;
-      opacity:.75;
+      font-weight:850;
+      color:rgba(11,34,53,0.62);
       line-height:1.3;
     }
-
     .logo{
       height:46px;
+      width:auto;
+      display:block;
       filter: drop-shadow(0 10px 16px rgba(0,0,0,0.12));
+      flex:0 0 auto;
+    }
+
+    @media(max-width:680px){
+      .footer{ flex-wrap:wrap; }
+      .foot-left{ max-width:100%; }
     }
   </style>
 </head>
@@ -179,15 +248,43 @@
     <div class="content">
 
       <div class="map-frame">
-        <svg id="map" viewBox="0 0 975 610"></svg>
+        <svg id="map" viewBox="0 0 975 610" role="img" aria-label="Snowstorm Couch Potato Rankings map"></svg>
 
-        <div class="tierbar">
-          <div class="bar"></div>
+        <div class="tierbar" aria-label="Tier key">
+          <div class="bar" aria-hidden="true"></div>
+
           <div class="labels">
-            <div class="item"><span class="dot" style="background:var(--lvl1)"></span><div>Level 1 (Ranks #1–13)<div class="legend-sub">Most couch-prone</div></div></div>
-            <div class="item"><span class="dot" style="background:var(--lvl2)"></span><div>Level 2 (Ranks #14–25)<div class="legend-sub">Couch-leaning</div></div></div>
-            <div class="item"><span class="dot" style="background:var(--lvl3)"></span><div>Level 3 (Ranks #26–37)<div class="legend-sub">Mostly active</div></div></div>
-            <div class="item"><span class="dot" style="background:var(--lvl4)"></span><div>Level 4 (Ranks #38–50)<div class="legend-sub">Least couch-prone</div></div></div>
+            <div class="item">
+              <span class="dot" style="background:var(--lvl1)"></span>
+              <div>
+                <div>Level 1 (Ranks #1–13)</div>
+                <div class="legend-sub">Most couch-prone</div>
+              </div>
+            </div>
+
+            <div class="item">
+              <span class="dot" style="background:var(--lvl2)"></span>
+              <div>
+                <div>Level 2 (Ranks #14–25)</div>
+                <div class="legend-sub">Couch-leaning</div>
+              </div>
+            </div>
+
+            <div class="item">
+              <span class="dot" style="background:var(--lvl3)"></span>
+              <div>
+                <div>Level 3 (Ranks #26–37)</div>
+                <div class="legend-sub">Mostly active</div>
+              </div>
+            </div>
+
+            <div class="item">
+              <span class="dot" style="background:var(--lvl4)"></span>
+              <div>
+                <div>Level 4 (Ranks #38–50)</div>
+                <div class="legend-sub">Least couch-prone</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -197,8 +294,7 @@
           <div class="source">Source: Vegas Insider analysis</div>
           <div class="method">
             Snowstorm context: when snow and ice limit outdoor movement, routines shift indoors.
-            Final Couch Potato Score combines inactivity, winter conditions, gym access,
-            TV viewing, and sports-watching interest.
+            Final Couch Potato Score combines inactivity, winter conditions, gym access, TV viewing, and sports-watching interest.
           </div>
         </div>
 
@@ -211,14 +307,32 @@
 </div>
 
 <script>
-  const tierColor={1:"#ff6b6b",2:"#ffb24a",3:"#37c28b",4:"#4aa3ff"};
-  const couchData={"West Virginia":1,"Kentucky":2,"Mississippi":3,"Delaware":4,"North Dakota":5,"Oklahoma":6,"Louisiana":7,"Indiana":8,"Alabama":9,"Nevada":10,"Arkansas":11,"South Dakota":12,"Missouri":13,"Ohio":14,"South Carolina":15,"Wyoming":16,"Michigan":17,"Pennsylvania":18,"Tennessee":19,"Iowa":20,"Georgia":21,"Rhode Island":22,"Kansas":23,"Nebraska":24,"Wisconsin":25,"Illinois":26,"New Jersey":27,"Maine":28,"New Mexico":29,"Idaho":30,"Montana":31,"Maryland":32,"Arizona":33,"Florida":34,"Minnesota":35,"North Carolina":36,"New Hampshire":37,"Alaska":38,"Texas":39,"Massachusetts":40,"New York":41,"Virginia":42,"Oregon":43,"Connecticut":44,"Vermont":45,"Colorado":46,"Hawaii":47,"Washington":48,"Utah":49,"California":50};
+  const tierColor = {
+    1: getComputedStyle(document.documentElement).getPropertyValue("--lvl1").trim(),
+    2: getComputedStyle(document.documentElement).getPropertyValue("--lvl2").trim(),
+    3: getComputedStyle(document.documentElement).getPropertyValue("--lvl3").trim(),
+    4: getComputedStyle(document.documentElement).getPropertyValue("--lvl4").trim()
+  };
 
-  function level(r){return r<=13?1:r<=25?2:r<=37?3:4;}
+  const couchData = {
+    "West Virginia":1,"Kentucky":2,"Mississippi":3,"Delaware":4,"North Dakota":5,
+    "Oklahoma":6,"Louisiana":7,"Indiana":8,"Alabama":9,"Nevada":10,
+    "Arkansas":11,"South Dakota":12,"Missouri":13,"Ohio":14,"South Carolina":15,
+    "Wyoming":16,"Michigan":17,"Pennsylvania":18,"Tennessee":19,"Iowa":20,
+    "Georgia":21,"Rhode Island":22,"Kansas":23,"Nebraska":24,"Wisconsin":25,
+    "Illinois":26,"New Jersey":27,"Maine":28,"New Mexico":29,"Idaho":30,
+    "Montana":31,"Maryland":32,"Arizona":33,"Florida":34,"Minnesota":35,
+    "North Carolina":36,"New Hampshire":37,"Alaska":38,"Texas":39,
+    "Massachusetts":40,"New York":41,"Virginia":42,"Oregon":43,
+    "Connecticut":44,"Vermont":45,"Colorado":46,"Hawaii":47,
+    "Washington":48,"Utah":49,"California":50
+  };
 
-  const svg=d3.select("#map");
-  const projection=d3.geoAlbersUsa().scale(1300).translate([487,305]);
-  const path=d3.geoPath(projection);
+  function level(r){ return r<=13?1 : r<=25?2 : r<=37?3 : 4; }
+
+  const svg = d3.select("#map");
+  const projection = d3.geoAlbersUsa().scale(1300).translate([487,305]);
+  const path = d3.geoPath(projection);
 
   d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json").then(us=>{
     svg.selectAll("path")
@@ -227,8 +341,8 @@
       .attr("class","state")
       .attr("d",path)
       .attr("fill",d=>{
-        const r=couchData[d.properties.name];
-        return r?tierColor[level(r)]:"#ddd";
+        const r = couchData[d.properties.name];
+        return r ? tierColor[level(r)] : "#ddd";
       });
   });
 </script>
