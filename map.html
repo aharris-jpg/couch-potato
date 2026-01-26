@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Vegas Insider — Couch Potato Rankings (by State)</title>
+  <title>Vegas Insider — Snowstorm Couch Potato Rankings (by State)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- D3 + TopoJSON -->
@@ -12,27 +12,20 @@
   <style>
     :root{
       --ink:#0b2235;
-
-      /* Softer, not scary */
       --bgA:#eaf4ff;
       --bgB:#fdeff3;
-
       --card:rgba(255,255,255,0.78);
       --border:rgba(11,34,53,0.10);
       --shadow:0 18px 46px rgba(0,0,0,0.12);
-
       --radius:18px;
       --mapStroke:#ffffff;
       --mapStrokeW:6.2;
-
       --font: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
       --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
-
-      /* Tier colors (match bar + legend dots) */
-      --lvl1:#ff6b6b; /* most couch-prone */
-      --lvl2:#ffb24a; /* couch-leaning */
-      --lvl3:#37c28b; /* mostly active */
-      --lvl4:#4aa3ff; /* least couch-prone */
+      --lvl1:#ff6b6b;
+      --lvl2:#ffb24a;
+      --lvl3:#37c28b;
+      --lvl4:#4aa3ff;
     }
 
     *{ box-sizing:border-box; }
@@ -48,152 +41,66 @@
         radial-gradient(900px 620px at 82% 18%, rgba(255,107,107,0.18), transparent 56%),
         radial-gradient(900px 650px at 60% 88%, rgba(55,194,139,0.16), transparent 58%),
         linear-gradient(180deg, var(--bgA), var(--bgB));
-      overflow-x:hidden;
     }
 
     .wrap{ max-width:1040px; margin:0 auto; }
 
-    /* ===== Header ===== */
     .hero{
       text-align:center;
       margin-bottom:12px;
-      position:relative;
-      padding:6px 0 2px;
     }
     .pill{
       display:inline-flex;
       align-items:center;
-      gap:10px;
       padding:7px 12px;
       border-radius:999px;
       border:1px solid rgba(11,34,53,0.12);
       background:rgba(255,255,255,0.62);
-      box-shadow:0 10px 24px rgba(0,0,0,0.06);
       font-weight:950;
       text-transform:uppercase;
       letter-spacing:0.06em;
       font-size:11px;
-      color:rgba(11,34,53,0.78);
       margin-bottom:10px;
     }
     .title{
       margin:0;
       font-weight:1000;
-      letter-spacing:-0.012em;
-      line-height:0.98;
       font-size:clamp(30px, 4.8vw, 58px);
-      color:rgba(11,34,53,0.94);
-      text-shadow:0 10px 26px rgba(0,0,0,0.06);
     }
     .title .hi{
-      display:inline-block;
       padding:0.06em 0.34em 0.10em;
       border-radius:14px;
       background:linear-gradient(90deg, rgba(255,107,107,0.25), rgba(255,178,74,0.22));
-      box-shadow:0 10px 22px rgba(255,107,107,0.10);
-    }
-    .sub{
-      margin:10px auto 0;
-      max-width:86ch;
-      font-size:12.5px;
-      font-weight:850;
-      color:rgba(11,34,53,0.65);
-      line-height:1.35;
     }
 
-    /* ===== Card ===== */
     .card{
-      position:relative;
       background:var(--card);
       border:1px solid var(--border);
       border-radius:var(--radius);
       box-shadow:var(--shadow);
-      overflow:hidden;
       backdrop-filter: blur(10px);
     }
 
-    /* Watermark collage around edges of whole graphic */
-    .card:before{
-      content:"";
-      position:absolute;
-      inset:-24px;
-      pointer-events:none;
-      z-index:0;
-      opacity:0.13; /* more visible than before */
-      background-repeat:no-repeat;
-      /* smaller so you see more of them */
-      background-size:
-        180px auto, 200px auto, 170px auto, 210px auto,
-        120px auto, 170px auto, 150px auto, 160px auto;
-      background-position:
-        26px 22px,                  /* sofa */
-        calc(100% - 22px) 30px,      /* sofa */
-        24px calc(100% - 40px),      /* sofa */
-        calc(100% - 12px) calc(100% - 26px), /* sofa */
-        50% 14px,                    /* snowflake top */
-        8% 52%,                      /* TV */
-        92% 58%,                     /* TV */
-        50% calc(100% - 16px);       /* snowflake bottom */
-      filter:saturate(0.95) contrast(1.05);
-    }
-    /* gentle wash to keep content crisp */
-    .card:after{
-      content:"";
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      z-index:0;
-      background:
-        linear-gradient(165deg,
-          rgba(255,255,255,0.00) 0%,
-          rgba(255,255,255,0.00) 32%,
-          rgba(255,255,255,0.22) 33%,
-          rgba(255,255,255,0.22) 58%,
-          rgba(255,255,255,0.00) 59%,
-          rgba(255,255,255,0.00) 100%),
-        rgba(255,255,255,0.16);
-      opacity:0.62;
-    }
+    .content{ padding:16px; }
 
-    .content{
-      position:relative;
-      z-index:1;
-      padding:16px 16px 12px;
-    }
-
-    /* ===== Map frame ===== */
     .map-frame{
-      position:relative;
       border-radius:16px;
       border:1px solid rgba(11,34,53,0.10);
       background:rgba(255,255,255,0.72);
-      overflow:hidden;
-      padding:10px 10px 8px;
+      padding:10px;
     }
 
-    svg{ width:100%; height:auto; display:block; }
+    svg{ width:100%; height:auto; }
 
     .state{
-      stroke:var(--mapStroke);
-      stroke-width:var(--mapStrokeW);
-      stroke-linejoin:round;
-      stroke-linecap:round;
+      stroke:#fff;
+      stroke-width:6.2;
       cursor:pointer;
-      transition:filter .12s ease, opacity .12s ease;
-    }
-    .state:hover{ filter: drop-shadow(0 0 10px rgba(0,0,0,0.12)); }
-
-    .state-outline{
-      fill:none;
-      stroke:rgba(11,34,53,0.08);
-      stroke-width:1;
-      pointer-events:none;
     }
 
-    /* ===== Bar key ===== */
     .tierbar{
       margin-top:8px;
-      padding:8px 8px 6px;
+      padding:8px;
       border-radius:14px;
       background:rgba(255,255,255,0.62);
       border:1px solid rgba(11,34,53,0.10);
@@ -201,207 +108,60 @@
     .tierbar .bar{
       height:10px;
       border-radius:999px;
-      border:1px solid rgba(11,34,53,0.14);
       background:linear-gradient(90deg,
-        var(--lvl1) 0%,
-        var(--lvl1) 24%,
-        var(--lvl2) 24%,
-        var(--lvl2) 49%,
-        var(--lvl3) 49%,
-        var(--lvl3) 74%,
-        var(--lvl4) 74%,
-        var(--lvl4) 100%
-      );
+        var(--lvl1) 0%, var(--lvl1) 26%,
+        var(--lvl2) 26%, var(--lvl2) 50%,
+        var(--lvl3) 50%, var(--lvl3) 74%,
+        var(--lvl4) 74%, var(--lvl4) 100%);
     }
-    .tierbar .labels{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px 14px;
-      justify-content:space-between;
-      margin-top:7px;
+    .labels{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:8px;
+      margin-top:8px;
       font-size:11px;
       font-weight:900;
-      color:rgba(11,34,53,0.72);
     }
-    .tierbar .labels .item{
-      display:flex;
-      align-items:center;
-      gap:7px;
-      white-space:nowrap;
-    }
-    .dot{
-      width:8px;height:8px;border-radius:50%;
-      flex:0 0 auto;
-    }
-
-    /* ===== Bottom tiers grid ===== */
-    .tiers{
-      margin-top:12px;
-      display:grid;
-      grid-template-columns:repeat(2, minmax(0,1fr));
-      gap:12px;
-    }
-    @media(max-width:780px){ .tiers{ grid-template-columns:1fr; } }
-
-    .tiercard{
-      background:rgba(255,255,255,0.62);
-      border:1px solid rgba(11,34,53,0.10);
-      border-radius:16px;
-      padding:10px 10px;
-      display:grid;
-      grid-template-columns:62px 1fr;
-      gap:10px;
-      min-height:120px;
-    }
-    /* bigger icons */
-    .tiericon{
-      width:58px;height:58px;
-      object-fit:contain;
-      filter: drop-shadow(0 10px 14px rgba(0,0,0,0.14));
-      opacity:0.98;
-      align-self:start;
-      margin-top:2px;
-    }
-    .tierhead{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      align-items:flex-start;
-      margin-bottom:6px;
-    }
-    .tiername{
-      font-weight:1000;
-      font-size:12px;
-      text-transform:uppercase;
-      letter-spacing:.02em;
-      color:rgba(11,34,53,0.90);
-      line-height:1.05;
-    }
-    .countpill{
-      font-size:11px;
-      font-weight:950;
-      padding:5px 8px;
-      border-radius:999px;
-      border:1px solid rgba(11,34,53,0.10);
-      background:rgba(255,255,255,0.70);
-      color:rgba(11,34,53,0.70);
-      white-space:nowrap;
-    }
-
-    /* state list columns inside tier */
-    .statelist{
-      column-count:2;
-      column-gap:16px;
-      font-size:11px;
-      font-weight:900;
-      color:rgba(11,34,53,0.82);
-    }
-    .statelist div{
-      break-inside:avoid;
-      padding:2px 0;
+    .item{
       display:flex;
       gap:6px;
-      align-items:baseline;
+      align-items:flex-start;
     }
-    .rk{
-      font-family:var(--mono);
-      font-weight:950;
-      color:rgba(11,34,53,0.66);
-      width:26px;
-      text-align:right;
-      flex:0 0 auto;
+    .dot{ width:8px;height:8px;border-radius:50%; margin-top:3px; }
+    .legend-sub{ font-size:10px; opacity:.7; }
+
+    @media(max-width:780px){
+      .labels{ grid-template-columns:repeat(2,1fr); }
     }
 
-    /* ===== Tooltip ===== */
-    .tooltip{
-      position:absolute;
-      pointer-events:none;
-      display:none;
-      z-index:100;
-      background:rgba(255,255,255,0.96);
-      border:1px solid rgba(11,34,53,0.14);
-      border-radius:14px;
-      padding:10px 12px;
-      box-shadow:0 18px 44px rgba(0,0,0,0.16);
-      max-width:250px;
-      backdrop-filter: blur(10px);
-    }
-    .tooltip strong{
-      display:block;
-      font-weight:1000;
-      margin-bottom:4px;
-      color:rgba(11,34,53,0.92);
-    }
-    .tooltip .mono{
-      font-family:var(--mono);
-      font-variant-numeric:tabular-nums;
-      font-weight:950;
-      color:rgba(11,34,53,0.82);
-    }
-    .tooltip .muted{
-      margin-top:4px;
-      font-size:11px;
-      color:rgba(11,34,53,0.62);
-      font-weight:850;
-      line-height:1.25;
-    }
-
-    /* ===== Footer ===== */
     .footer{
-      position:relative;
-      z-index:1;
       margin-top:12px;
-      padding:10px 16px 12px;
+      padding:12px 16px;
       background:rgba(255,255,255,0.58);
       border-top:1px solid rgba(11,34,53,0.08);
       display:flex;
       align-items:flex-end;
       justify-content:space-between;
-      gap:14px;
-      flex-wrap:wrap;
+      gap:16px;
     }
+
     .foot-left{
-      min-width:260px;
+      max-width:70%;
     }
     .source{
       font-size:11px;
       font-weight:1000;
       text-transform:uppercase;
-      color:rgba(11,34,53,0.78);
       margin-bottom:4px;
-    }
-    .source a{
-      color:rgba(11,34,53,0.82);
-      text-decoration:none;
-      border-bottom:1px dotted rgba(11,34,53,0.40);
-      text-transform:none;
-      font-weight:1000;
     }
     .method{
       font-size:11px;
-      font-weight:850;
-      color:rgba(11,34,53,0.62);
-      line-height:1.25;
-      max-width:62ch;
+      opacity:.75;
+      line-height:1.3;
     }
-    .foot-mid{
-      font-size:11px;
-      font-weight:900;
-      color:rgba(11,34,53,0.60);
-      margin-left:auto;
-      margin-right:auto;
-      text-align:center;
-      white-space:nowrap;
-    }
-    .brand{
-      display:flex;
-      align-items:flex-end;
-      gap:10px;
-    }
+
     .logo{
-      height:46px; /* bigger */
-      width:auto;
-      display:block;
+      height:46px;
       filter: drop-shadow(0 10px 16px rgba(0,0,0,0.12));
     }
   </style>
@@ -411,48 +171,38 @@
 <div class="wrap">
 
   <div class="hero">
-    <div class="pill">Vegas Insider • Winter activity</div>
-    <h1 class="title"><span class="hi">Couch Potato</span> Rankings — by State</h1>
-    <div class="sub">
-      States are grouped into four Couch Potato Levels by rank (Level 1 = most couch-prone → Level 4 = least).
-      Built to screenshot cleanly, with a simple hover.
-    </div>
+    <div class="pill">Vegas Insider • Snowstorm week</div>
+    <h1 class="title"><span class="hi">Snowstorm</span> Couch Potato Rankings — by State</h1>
   </div>
 
-  <div class="card" id="card">
+  <div class="card">
     <div class="content">
 
       <div class="map-frame">
-        <svg id="map" viewBox="0 0 975 610" role="img" aria-label="Couch Potato Rankings map"></svg>
+        <svg id="map" viewBox="0 0 975 610"></svg>
 
-        <div class="tierbar" aria-label="Tier key">
-          <div class="bar" aria-hidden="true"></div>
+        <div class="tierbar">
+          <div class="bar"></div>
           <div class="labels">
-            <div class="item"><span class="dot" style="background:var(--lvl1)"></span>Level 1 — Most couch-prone</div>
-            <div class="item"><span class="dot" style="background:var(--lvl2)"></span>Level 2 — Couch-leaning</div>
-            <div class="item"><span class="dot" style="background:var(--lvl3)"></span>Level 3 — Mostly active</div>
-            <div class="item"><span class="dot" style="background:var(--lvl4)"></span>Level 4 — Least couch-prone</div>
+            <div class="item"><span class="dot" style="background:var(--lvl1)"></span><div>Level 1 (Ranks #1–13)<div class="legend-sub">Most couch-prone</div></div></div>
+            <div class="item"><span class="dot" style="background:var(--lvl2)"></span><div>Level 2 (Ranks #14–25)<div class="legend-sub">Couch-leaning</div></div></div>
+            <div class="item"><span class="dot" style="background:var(--lvl3)"></span><div>Level 3 (Ranks #26–37)<div class="legend-sub">Mostly active</div></div></div>
+            <div class="item"><span class="dot" style="background:var(--lvl4)"></span><div>Level 4 (Ranks #38–50)<div class="legend-sub">Least couch-prone</div></div></div>
           </div>
         </div>
       </div>
 
-      <div class="tiers" id="tiers"></div>
-
       <div class="footer">
         <div class="foot-left">
           <div class="source">Source: Vegas Insider analysis</div>
-          <a href="https://www.vegasinsider.com" target="_blank" rel="noopener">vegasinsider.com</a>
           <div class="method">
-            Method (summary): Final Couch Potato Score (0–100) is built from standardized signals:
-            physical inactivity, winter temperature, gym access, gym membership, daily TV time, and sports-viewing search interest.
+            Snowstorm context: when snow and ice limit outdoor movement, routines shift indoors.
+            Final Couch Potato Score combines inactivity, winter conditions, gym access,
+            TV viewing, and sports-watching interest.
           </div>
         </div>
 
-        <div class="foot-mid">Tip: Hover a state for Rank • Score • Level</div>
-
-        <div class="brand" aria-label="Brand">
-          <img class="logo" alt="Vegas Insider logo" src="https://i.postimg.cc/XYYF4tkL/download.png">
-        </div>
+        <img class="logo" src="https://i.postimg.cc/XYYF4tkL/download.png" alt="Vegas Insider logo">
       </div>
 
     </div>
@@ -460,267 +210,26 @@
 
 </div>
 
-<div class="tooltip" id="tt"></div>
-
 <script>
-  // =========================
-  // Watermark images around the card (editable)
-  // =========================
-  const WM = {
-    snowflake: "https://i.postimg.cc/mZjRh8x6/snowflake.png",
-    redSofa:   "https://i.postimg.cc/htkRNYxN/red-couch-or-sofa-design-illustration-vector-removebg-preview.png",
-    blueSofa:  "https://i.postimg.cc/KzFS8g08/Sofa-Clipart-Graphics-109399184-1-580x387-removebg-preview.png",
-    pinkCouch: "https://i.postimg.cc/QtbL9xz2/couch-illustration-svg-download-png-3414863.png",
-    tv1:       "https://i.postimg.cc/43kjW9kc/download-removebg-preview.png",
-    tv2:       "https://i.postimg.cc/0Q5W4Gtw/download-1-removebg-preview.png",
-    remote:    "https://i.postimg.cc/x8CZXGML/images-removebg-preview.png"
-  };
+  const tierColor={1:"#ff6b6b",2:"#ffb24a",3:"#37c28b",4:"#4aa3ff"};
+  const couchData={"West Virginia":1,"Kentucky":2,"Mississippi":3,"Delaware":4,"North Dakota":5,"Oklahoma":6,"Louisiana":7,"Indiana":8,"Alabama":9,"Nevada":10,"Arkansas":11,"South Dakota":12,"Missouri":13,"Ohio":14,"South Carolina":15,"Wyoming":16,"Michigan":17,"Pennsylvania":18,"Tennessee":19,"Iowa":20,"Georgia":21,"Rhode Island":22,"Kansas":23,"Nebraska":24,"Wisconsin":25,"Illinois":26,"New Jersey":27,"Maine":28,"New Mexico":29,"Idaho":30,"Montana":31,"Maryland":32,"Arizona":33,"Florida":34,"Minnesota":35,"North Carolina":36,"New Hampshire":37,"Alaska":38,"Texas":39,"Massachusetts":40,"New York":41,"Virginia":42,"Oregon":43,"Connecticut":44,"Vermont":45,"Colorado":46,"Hawaii":47,"Washington":48,"Utah":49,"California":50};
 
-  // apply watermark background-image list
-  (function applyWatermarks(){
-    const card = document.getElementById("card");
-    card.style.setProperty("--wm", "1"); // noop hook
-    const style = document.createElement("style");
-    style.textContent = `
-      #card.card:before{
-        background-image:
-          url("${WM.redSofa}"),
-          url("${WM.blueSofa}"),
-          url("${WM.pinkCouch}"),
-          url("${WM.remote}"),
-          url("${WM.snowflake}"),
-          url("${WM.tv1}"),
-          url("${WM.tv2}"),
-          url("${WM.snowflake}");
-      }
-    `;
-    document.head.appendChild(style);
-  })();
+  function level(r){return r<=13?1:r<=25?2:r<=37?3:4;}
 
-  // =========================
-  // Tier icons (bigger, bottom cards)
-  // =========================
-  const TIER_ICON = {
-    1: "https://i.postimg.cc/HxmH8MPg/couch-potato-level-1.png",
-    2: "https://i.postimg.cc/0y3X4qpV/couch-potato-level-2-removebg-preview.png",
-    3: "https://i.postimg.cc/d3thdpNS/couch-potato-level-3-removebg-preview.png",
-    4: "https://i.postimg.cc/pXr9dNF8/couch-potato-level-4-removebg-preview.png"
-  };
+  const svg=d3.select("#map");
+  const projection=d3.geoAlbersUsa().scale(1300).translate([487,305]);
+  const path=d3.geoPath(projection);
 
-  const tierColor = {
-    1: getComputedStyle(document.documentElement).getPropertyValue("--lvl1").trim(),
-    2: getComputedStyle(document.documentElement).getPropertyValue("--lvl2").trim(),
-    3: getComputedStyle(document.documentElement).getPropertyValue("--lvl3").trim(),
-    4: getComputedStyle(document.documentElement).getPropertyValue("--lvl4").trim()
-  };
-
-  // =========================
-  // DATA (rank + score)
-  // =========================
-  const couchData = {
-    "West Virginia":{rank:1,score:75.43},
-    "Kentucky":{rank:2,score:70.66},
-    "Mississippi":{rank:3,score:69.20},
-    "Delaware":{rank:4,score:68.82},
-    "North Dakota":{rank:5,score:68.45},
-    "Oklahoma":{rank:6,score:67.81},
-    "Louisiana":{rank:7,score:66.03},
-    "Indiana":{rank:8,score:64.76},
-    "Alabama":{rank:9,score:64.25},
-    "Nevada":{rank:10,score:64.23},
-    "Arkansas":{rank:11,score:63.39},
-    "South Dakota":{rank:12,score:60.98},
-    "Missouri":{rank:13,score:60.58},
-
-    "Ohio":{rank:14,score:59.69},
-    "South Carolina":{rank:15,score:59.34},
-    "Wyoming":{rank:16,score:58.45},
-    "Michigan":{rank:17,score:58.38},
-    "Pennsylvania":{rank:18,score:57.75},
-    "Tennessee":{rank:19,score:57.39},
-    "Iowa":{rank:20,score:56.61},
-    "Georgia":{rank:21,score:54.14},
-    "Rhode Island":{rank:22,score:53.22},
-    "Kansas":{rank:23,score:52.85},
-    "Nebraska":{rank:24,score:52.49},
-    "Wisconsin":{rank:25,score:52.16},
-
-    "Illinois":{rank:26,score:50.46},
-    "New Jersey":{rank:27,score:50.15},
-    "Maine":{rank:28,score:49.88},
-    "New Mexico":{rank:29,score:49.69},
-    "Idaho":{rank:30,score:48.29},
-    "Montana":{rank:31,score:48.01},
-    "Maryland":{rank:32,score:47.48},
-    "Arizona":{rank:33,score:47.47},
-    "Florida":{rank:34,score:46.21},
-    "Minnesota":{rank:35,score:45.78},
-    "North Carolina":{rank:36,score:45.62},
-    "New Hampshire":{rank:37,score:44.87},
-
-    "Alaska":{rank:38,score:44.80},
-    "Texas":{rank:39,score:44.72},
-    "Massachusetts":{rank:40,score:44.18},
-    "New York":{rank:41,score:43.88},
-    "Virginia":{rank:42,score:43.73},
-    "Oregon":{rank:43,score:43.15},
-    "Connecticut":{rank:44,score:40.05},
-    "Vermont":{rank:45,score:37.70},
-    "Colorado":{rank:46,score:36.19},
-    "Hawaii":{rank:47,score:35.16},
-    "Washington":{rank:48,score:32.39},
-    "Utah":{rank:49,score:30.52},
-    "California":{rank:50,score:20.01}
-  };
-
-  function levelForRank(rank){
-    if(rank <= 13) return 1;
-    if(rank <= 25) return 2;
-    if(rank <= 37) return 3;
-    return 4;
-  }
-
-  function esc(s){
-    return String(s).replace(/[&<>"']/g, c => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-    }[c]));
-  }
-
-  // =========================
-  // Build bottom tier cards (bigger icon left, states right)
-  // =========================
-  const rows = Object.entries(couchData)
-    .map(([state, v]) => ({ state, ...v, level: levelForRank(v.rank) }))
-    .sort((a,b)=>a.rank-b.rank);
-
-  const byLevel = new Map([[1,[]],[2,[]],[3,[]],[4,[]]]);
-  rows.forEach(r => byLevel.get(r.level).push(r));
-
-  const tierMeta = {
-    1:{title:"Level 1 — Most couch-prone"},
-    2:{title:"Level 2 — Couch-leaning"},
-    3:{title:"Level 3 — Mostly active"},
-    4:{title:"Level 4 — Least couch-prone"}
-  };
-
-  const tiersEl = document.getElementById("tiers");
-  tiersEl.innerHTML = [1,2,3,4].map(lvl => {
-    const list = byLevel.get(lvl);
-    const count = list.length;
-    const items = list.map(d => `<div><span class="rk">#${d.rank}</span><span>${esc(d.state)}</span></div>`).join("");
-    return `
-      <div class="tiercard">
-        <img class="tiericon" src="${TIER_ICON[lvl]}" alt="">
-        <div>
-          <div class="tierhead">
-            <div class="tiername">
-              <span style="display:inline-flex;align-items:center;gap:8px">
-                <span class="dot" style="background:${tierColor[lvl]};width:9px;height:9px"></span>
-                ${esc(tierMeta[lvl].title)}
-              </span>
-            </div>
-            <div class="countpill">${count} state${count===1?"":"s"}</div>
-          </div>
-          <div class="statelist">${items}</div>
-        </div>
-      </div>
-    `;
-  }).join("");
-
-  // =========================
-  // Tooltip (simple)
-  // =========================
-  const tooltip = d3.select("#tt");
-  function placeTooltip(event){
-    const rect = tooltip.node().getBoundingClientRect();
-    const pad = 10;
-    let x = event.pageX + 12;
-    let y = event.pageY + 12;
-    if (x + rect.width > window.innerWidth - pad) x = window.innerWidth - rect.width - pad;
-    if (y + rect.height > window.innerHeight - pad) y = window.innerHeight - rect.height - pad;
-    tooltip.style("left", x+"px").style("top", y+"px");
-  }
-  function showTip(event, stateName, d){
-    tooltip
-      .style("display","block")
-      .html(
-        `<strong>${esc(stateName)}</strong>
-         <div class="mono">Rank #${d.rank} • Score ${d.score.toFixed(2)} • Level ${levelForRank(d.rank)}</div>
-         <div class="muted">Higher score = more couch-prone</div>`
-      );
-    placeTooltip(event);
-  }
-  function hideTip(){ tooltip.style("display","none"); }
-
-  // =========================
-  // Map rendering
-  // =========================
-  const svg = d3.select("#map");
-  svg.attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
-
-  const W = 975, H = 610;
-  const projection = d3.geoAlbersUsa().scale(1300).translate([W/2, H/2]);
-  const path = d3.geoPath(projection);
-
-  let statePaths;
-
-  function fillForState(name){
-    const d = couchData[name];
-    if(!d) return "rgba(11,34,53,0.08)";
-    return tierColor[levelForRank(d.rank)] || "rgba(11,34,53,0.10)";
-  }
-
-  function clearHighlight(){
-    if(!statePaths) return;
-    statePaths
-      .attr("opacity", 1)
-      .attr("stroke", "#fff")
-      .attr("stroke-width", parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--mapStrokeW")) || 6.2);
-  }
-
-  function highlightState(name){
-    if(!statePaths) return;
-    statePaths
-      .attr("opacity", d => (d.properties.name === name ? 1 : 0.32))
-      .attr("stroke", d => (d.properties.name === name ? "rgba(11,34,53,0.88)" : "#fff"))
-      .attr("stroke-width", d => (d.properties.name === name ? 7 : 6.2));
-  }
-
-  d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json").then(us => {
-    const features = topojson.feature(us, us.objects.states).features;
-
-    svg.attr("viewBox", `0 0 ${W} ${H}`);
-
-    statePaths = svg.append("g")
-      .selectAll("path")
-      .data(features)
-      .join("path")
+  d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json").then(us=>{
+    svg.selectAll("path")
+      .data(topojson.feature(us, us.objects.states).features)
+      .enter().append("path")
       .attr("class","state")
-      .attr("d", path)
-      .attr("fill", d => fillForState(d.properties.name))
-      .on("mousemove", (event, d) => {
-        const name = d.properties && d.properties.name;
-        const data = couchData[name];
-        if(!data) return hideTip();
-        showTip(event, name, data);
-      })
-      .on("mouseout", hideTip)
-      .on("click", (event, d) => {
-        const name = d.properties && d.properties.name;
-        const data = couchData[name];
-        if(!data) return;
-        showTip(event, name, data);
-        highlightState(name);
-        event.stopPropagation();
+      .attr("d",path)
+      .attr("fill",d=>{
+        const r=couchData[d.properties.name];
+        return r?tierColor[level(r)]:"#ddd";
       });
-
-    svg.append("path")
-      .datum(topojson.mesh(us, us.objects.states, (a,b)=>a!==b))
-      .attr("class","state-outline")
-      .attr("d", path);
-
-    document.addEventListener("click", () => { hideTip(); clearHighlight(); });
-    document.addEventListener("keydown", (e)=>{ if(e.key==="Escape"){ hideTip(); clearHighlight(); }});
   });
 </script>
 
